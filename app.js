@@ -66,14 +66,25 @@ class TelegramWebApp {
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const backToMain = document.getElementById('backToMain');
+        const backFromSearch = document.getElementById('backFromSearch');
         const menuBtn = document.querySelector('.menu-btn');
+        const searchBtn = document.querySelector('.search-btn');
         const cloudeChat = document.querySelector('[data-chat="cloude"]');
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
 
         loginBtn?.addEventListener('click', () => this.handleLogin());
         logoutBtn?.addEventListener('click', () => this.handleLogout());
         backToMain?.addEventListener('click', () => this.switchScreen('mainScreen'));
+        backFromSearch?.addEventListener('click', () => this.switchScreen('mainScreen'));
         menuBtn?.addEventListener('click', () => this.switchScreen('profileScreen'));
+        searchBtn?.addEventListener('click', () => this.switchScreen('searchScreen'));
         cloudeChat?.addEventListener('click', () => this.openCloudeChat());
+        clearSearch?.addEventListener('click', () => this.clearSearchInput());
+
+        // Обработка поля поиска
+        searchInput?.addEventListener('input', (e) => this.handleSearch(e.target.value));
+        searchInput?.addEventListener('focus', () => this.showSearchResults());
 
         // Обработка вкладок фильтров
         const tabs = document.querySelectorAll('.tab');
@@ -318,30 +329,100 @@ class TelegramWebApp {
         const chatItems = document.querySelectorAll('.chat-item');
         
         chatItems.forEach(item => {
-            switch(filter) {
-                case 'my':
-                    // Показываем только личные чаты
-                    item.style.display = item.dataset.chat === 'cloude' ? 'flex' : 'none';
-                    break;
-                case 'personal':
-                    // Показываем персональные чаты
-                    const hasPersonalTag = item.querySelector('.personal-tag');
-                    item.style.display = hasPersonalTag ? 'flex' : 'none';
-                    break;
-                case 'secondary':
-                    // Показываем вторичные чаты (боты и каналы)
-                    const hasOpenBtn = item.querySelector('.open-btn');
-                    item.style.display = hasOpenBtn ? 'flex' : 'none';
-                    break;
-                case 'all':
-                default:
-                    // Показываем все чаты
-                    item.style.display = 'flex';
-                    break;
-            }
+            // Теперь показываем только Cloude во всех фильтрах
+            item.style.display = item.dataset.chat === 'cloude' ? 'flex' : 'none';
         });
         
         this.hapticFeedback('light');
+    }
+
+    // Методы для работы с поиском
+    handleSearch(query) {
+        const searchResults = document.getElementById('searchResults');
+        const clearBtn = document.getElementById('clearSearch');
+        const recentSection = document.querySelector('.recent-section');
+        const suggestionsList = document.querySelector('.suggestions-list');
+        
+        if (query.length > 0) {
+            clearBtn.classList.add('visible');
+            this.performSearch(query);
+            searchResults.style.display = 'block';
+            recentSection.style.display = 'none';
+            suggestionsList.style.display = 'none';
+        } else {
+            clearBtn.classList.remove('visible');
+            searchResults.style.display = 'none';
+            recentSection.style.display = 'block';
+            suggestionsList.style.display = 'block';
+        }
+    }
+
+    performSearch(query) {
+        // Имитация поиска пользователей
+        const mockUsers = [
+            { name: 'Cloude Assistant', username: 'cloude_ai', avatar: 'C', color: '#64b5ef' },
+            { name: 'Test User', username: 'testuser', avatar: 'T', color: '#ff6b6b' },
+            { name: 'Demo Account', username: 'demo', avatar: 'D', color: '#4CAF50' }
+        ];
+
+        const results = mockUsers.filter(user => 
+            user.username.toLowerCase().includes(query.toLowerCase()) ||
+            user.name.toLowerCase().includes(query.toLowerCase())
+        );
+
+        this.displaySearchResults(results);
+    }
+
+    displaySearchResults(results) {
+        const searchResults = document.getElementById('searchResults');
+        
+        if (results.length === 0) {
+            searchResults.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--tg-theme-hint-color);">Пользователи не найдены</div>';
+            return;
+        }
+
+        const resultsHTML = results.map(user => `
+            <div class="search-result-item" data-username="${user.username}">
+                <div class="result-avatar">
+                    <div class="avatar-circle" style="background: ${user.color}">
+                        <span>${user.avatar}</span>
+                    </div>
+                </div>
+                <div class="result-content">
+                    <h3 class="result-name">${user.name}</h3>
+                    <p class="result-username">@${user.username}</p>
+                </div>
+            </div>
+        `).join('');
+
+        searchResults.innerHTML = resultsHTML;
+
+        // Добавляем обработчики клика для результатов
+        searchResults.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const username = item.dataset.username;
+                this.selectUser(username);
+            });
+        });
+    }
+
+    selectUser(username) {
+        this.showAlert(`Выбран пользователь: @${username}`);
+        this.hapticFeedback('success');
+        // Здесь можно добавить логику добавления пользователя в чаты
+    }
+
+    clearSearchInput() {
+        const searchInput = document.getElementById('searchInput');
+        searchInput.value = '';
+        this.handleSearch('');
+    }
+
+    showSearchResults() {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput.value.length > 0) {
+            this.handleSearch(searchInput.value);
+        }
     }
 }
 
