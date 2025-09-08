@@ -65,9 +65,25 @@ class TelegramWebApp {
     setupEventListeners() {
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const backToMain = document.getElementById('backToMain');
+        const menuBtn = document.querySelector('.menu-btn');
+        const cloudeChat = document.querySelector('[data-chat="cloude"]');
 
         loginBtn?.addEventListener('click', () => this.handleLogin());
         logoutBtn?.addEventListener('click', () => this.handleLogout());
+        backToMain?.addEventListener('click', () => this.switchScreen('mainScreen'));
+        menuBtn?.addEventListener('click', () => this.switchScreen('profileScreen'));
+        cloudeChat?.addEventListener('click', () => this.openCloudeChat());
+
+        // Обработка вкладок фильтров
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                this.filterChats(tab.dataset.filter);
+            });
+        });
 
         // Обработка изменения темы
         if (this.tg) {
@@ -113,7 +129,7 @@ class TelegramWebApp {
 
         // Обновляем информацию о пользователе
         this.updateUserInfo();
-        this.switchScreen('profileScreen');
+        this.switchScreen('mainScreen');
     }
 
     updateUserInfo() {
@@ -126,13 +142,20 @@ class TelegramWebApp {
             userFirstName: document.getElementById('userFirstName'),
             userLastName: document.getElementById('userLastName'),
             userLanguage: document.getElementById('userLanguage'),
-            userAvatar: document.getElementById('userAvatar')
+            userAvatar: document.getElementById('userAvatar'),
+            headerUserAvatar: document.getElementById('headerUserAvatar'),
+            headerTitle: document.getElementById('headerTitle')
         };
 
         // Обновляем текстовую информацию
+        const fullName = [this.user.first_name, this.user.last_name].filter(Boolean).join(' ');
+        
         if (elements.userName) {
-            const fullName = [this.user.first_name, this.user.last_name].filter(Boolean).join(' ');
             elements.userName.textContent = fullName || 'Пользователь';
+        }
+
+        if (elements.headerTitle) {
+            elements.headerTitle.textContent = fullName || 'Telegram Web App';
         }
 
         if (elements.userUsername) {
@@ -165,6 +188,7 @@ class TelegramWebApp {
 
         // Обновляем аватар
         this.updateAvatar();
+        this.updateHeaderAvatar();
     }
 
     updateAvatar() {
@@ -192,6 +216,29 @@ class TelegramWebApp {
             if (this.tg && this.user.id) {
                 this.getProfilePhoto();
             }
+        }
+    }
+
+    updateHeaderAvatar() {
+        const headerAvatarImg = document.getElementById('headerUserAvatar');
+        const headerAvatarPlaceholder = document.querySelector('.avatar-placeholder-small');
+        
+        if (!headerAvatarImg || !this.user) return;
+
+        if (this.user.photo_url) {
+            headerAvatarImg.src = this.user.photo_url;
+            headerAvatarImg.onload = () => {
+                headerAvatarImg.classList.add('loaded');
+                if (headerAvatarPlaceholder) {
+                    headerAvatarPlaceholder.style.display = 'none';
+                }
+            };
+            headerAvatarImg.onerror = () => {
+                headerAvatarImg.classList.remove('loaded');
+                if (headerAvatarPlaceholder) {
+                    headerAvatarPlaceholder.style.display = 'flex';
+                }
+            };
         }
     }
 
@@ -258,6 +305,43 @@ class TelegramWebApp {
                     this.tg.HapticFeedback.impactOccurred('medium');
             }
         }
+    }
+
+    // Новые методы для работы с чатами
+    openCloudeChat() {
+        this.showAlert('Открытие чата с Cloude...');
+        this.hapticFeedback('light');
+        // Здесь можно добавить логику открытия чата
+    }
+
+    filterChats(filter) {
+        const chatItems = document.querySelectorAll('.chat-item');
+        
+        chatItems.forEach(item => {
+            switch(filter) {
+                case 'my':
+                    // Показываем только личные чаты
+                    item.style.display = item.dataset.chat === 'cloude' ? 'flex' : 'none';
+                    break;
+                case 'personal':
+                    // Показываем персональные чаты
+                    const hasPersonalTag = item.querySelector('.personal-tag');
+                    item.style.display = hasPersonalTag ? 'flex' : 'none';
+                    break;
+                case 'secondary':
+                    // Показываем вторичные чаты (боты и каналы)
+                    const hasOpenBtn = item.querySelector('.open-btn');
+                    item.style.display = hasOpenBtn ? 'flex' : 'none';
+                    break;
+                case 'all':
+                default:
+                    // Показываем все чаты
+                    item.style.display = 'flex';
+                    break;
+            }
+        });
+        
+        this.hapticFeedback('light');
     }
 }
 
