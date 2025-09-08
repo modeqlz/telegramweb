@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface User {
   id: string;
@@ -12,101 +12,59 @@ interface User {
   updated_at: string;
 }
 
-interface TelegramWebApp {
-  initData: string;
-  ready: () => void;
-  expand: () => void;
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: TelegramWebApp;
-    };
-  }
-}
-
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const mountedRef = useRef(true);
 
   const loadUserProfile = useCallback(async () => {
-    // Cancel previous request if exists
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create new abort controller
-    abortControllerRef.current = new AbortController();
-
     try {
-      // Get initData safely
-      const initData = (() => {
-        if (typeof window === 'undefined') return 'demo_data';
-        
-        const telegramWebApp = window.Telegram?.WebApp;
-        if (telegramWebApp?.initData) {
-          return telegramWebApp.initData;
-        }
-        return 'demo_data';
-      })();
+      setLoading(true);
+      setError(null);
 
-      // Call API with abort signal
-      const response = await fetch(`/api/me?initData=${encodeURIComponent(initData)}`, {
-        signal: abortControllerRef.current.signal,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      if (typeof window === 'undefined') return;
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      const tg = (window as any).Telegram?.WebApp;
+      const initData: string | undefined = tg?.initData;
 
-      const result = await response.json();
-
-      if (!result.ok) {
-        throw new Error(result.error || 'Failed to load user profile');
-      }
-
-      // Only update state if component is still mounted
-      if (mountedRef.current) {
-        setUser(result.user);
-        setError(null);
-      }
-    } catch (err) {
-      // Ignore abort errors
-      if (err instanceof Error && err.name === 'AbortError') {
+      // Открыто НЕ в Telegram → показываем мок
+      if (!initData) {
+        console.warn('Not in Telegram. Showing demo user.');
+        setUser({
+          id: 'local-demo',
+          username: 'demo',
+          first_name: 'Demo',
+          last_name: 'User',
+          photo_url: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
         return;
       }
 
-      console.error('Profile load error:', err);
+      // В Telegram → читаем профиль
+      const res = await fetch(`/api/me?initData=${encodeURIComponent(initData)}`);
+      const json = await res.json();
       
-      if (mountedRef.current) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred');
-        setUser(null);
+      if (!res.ok || !json.ok) {
+        throw new Error(json.error || `HTTP ${res.status}`);
       }
+
+      setUser(json.user);
+    } catch (e: any) {
+      setError(e?.message ?? 'Unknown error');
     } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    mountedRef.current = true;
+  // Retry handler for failed requests
+  const handleRetry = useCallback(() => {
     loadUserProfile();
+  }, [loadUserProfile]);
 
-    // Cleanup function
-    return () => {
-      mountedRef.current = false;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
+  useEffect(() => {
+    loadUserProfile();
   }, [loadUserProfile]);
 
   if (loading) {
@@ -148,13 +106,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Retry handler for failed requests
-  const handleRetry = useCallback(() => {
-    setError(null);
-    setLoading(true);
-    loadUserProfile();
-  }, [loadUserProfile]);
-
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
 
   return (
@@ -169,20 +120,12 @@ export default function ProfilePage() {
                 alt={`${fullName || 'User'} profile picture`}
                 className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white"
                 loading="lazy"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
               />
-            ) : null}
-            <div 
-              className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white bg-blue-500 flex items-center justify-center text-2xl font-bold"
-              style={{ display: user.photo_url ? 'none' : 'flex' }}
-            >
-              {fullName ? fullName.charAt(0).toUpperCase() : '👤'}
-            </div>
+            ) : (
+              <div className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white bg-blue-500 flex items-center justify-center text-2xl font-bold">
+                {fullName ? fullName.charAt(0).toUpperCase() : '👤'}
+              </div>
+            )}
             <h1 className="text-xl font-bold">{fullName || 'Пользователь'}</h1>
             {user.username && (
               <p className="text-blue-200">@{user.username}</p>
