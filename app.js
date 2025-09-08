@@ -3,6 +3,7 @@ class TelegramWebApp {
     constructor() {
         this.tg = window.Telegram?.WebApp;
         this.user = null;
+        this.supabaseManager = new SupabaseManager();
         this.init();
     }
 
@@ -104,9 +105,10 @@ class TelegramWebApp {
         }
     }
 
-    handleLogin() {
+    async handleLogin() {
         if (this.tg && this.tg.initDataUnsafe?.user) {
             this.user = this.tg.initDataUnsafe.user;
+            await this.saveUserToDatabase();
             this.showProfile();
         } else {
             // Демо-режим для тестирования
@@ -118,6 +120,7 @@ class TelegramWebApp {
                 language_code: 'ru',
                 photo_url: null
             };
+            await this.saveUserToDatabase();
             this.showProfile();
         }
     }
@@ -357,20 +360,36 @@ class TelegramWebApp {
         }
     }
 
-    performSearch(query) {
-        // Имитация поиска пользователей
-        const mockUsers = [
-            { name: 'Cloude Assistant', username: 'cloude_ai', avatar: 'C', color: '#64b5ef' },
-            { name: 'Test User', username: 'testuser', avatar: 'T', color: '#ff6b6b' },
-            { name: 'Demo Account', username: 'demo', avatar: 'D', color: '#4CAF50' }
-        ];
+    async performSearch(query) {
+        // Поиск в базе данных Supabase
+        const searchResult = await this.supabaseManager.searchUsers(query);
+        
+        if (searchResult.success) {
+            const users = searchResult.data.map(user => ({
+                name: [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Пользователь',
+                username: user.username || `user_${user.telegram_id}`,
+                avatar: user.first_name ? user.first_name.charAt(0).toUpperCase() : 'U',
+                color: this.getAvatarColor(user.telegram_id),
+                telegram_id: user.telegram_id,
+                photo_url: user.photo_url
+            }));
+            
+            this.displaySearchResults(users);
+        } else {
+            // Fallback к демо-данным если база недоступна
+            const mockUsers = [
+                { name: 'Cloude Assistant', username: 'cloude_ai', avatar: 'C', color: '#64b5ef' },
+                { name: 'Test User', username: 'testuser', avatar: 'T', color: '#ff6b6b' },
+                { name: 'Demo Account', username: 'demo', avatar: 'D', color: '#4CAF50' }
+            ];
 
-        const results = mockUsers.filter(user => 
-            user.username.toLowerCase().includes(query.toLowerCase()) ||
-            user.name.toLowerCase().includes(query.toLowerCase())
-        );
+            const results = mockUsers.filter(user => 
+                user.username.toLowerCase().includes(query.toLowerCase()) ||
+                user.name.toLowerCase().includes(query.toLowerCase())
+            );
 
-        this.displaySearchResults(results);
+            this.displaySearchResults(results);
+        }
     }
 
     displaySearchResults(results) {
@@ -422,6 +441,38 @@ class TelegramWebApp {
         const searchInput = document.getElementById('searchInput');
         if (searchInput.value.length > 0) {
             this.handleSearch(searchInput.value);
+        }
+    }
+
+    // Новые методы для работы с базой данных
+    async saveUserToDatabase() {
+        if (!this.user) return;
+
+        try {
+            const result = await this.supabaseManager.saveUserData(this.user);
+            
+            if (result.success) {
+                console.log('Пользователь сохранен в базе данных:', result.data);
+            } else {
+                console.error('Ошибка сохранения пользователя:', result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка при сохранении пользователя:', error);
+        }
+    }
+
+    getAvatarColor(telegramId) {
+        const colors = ['#64b5ef', '#ff6b6b', '#4CAF50', '#ff9500', '#8b5cf6', '#f59e0b'];
+        return colors[telegramId % colors.length];
+    }
+
+    async updateLastLogin() {
+        if (!this.user) return;
+
+        try {
+            await this.supabaseManager.updateLastLogin(this.user.id);
+        } catch (error) {
+            console.error('Ошибка обновления времени входа:', error);
         }
     }
 }
