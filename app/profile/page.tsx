@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 interface User {
   id: string;
@@ -30,45 +30,84 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
 
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      try {
-        // Check if we're in browser environment
-        if (typeof window === 'undefined') {
-          return;
-        }
+  const loadUserProfile = useCallback(async () => {
+    // Cancel previous request if exists
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-        // Check if Telegram WebApp is available
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+
+    try {
+      // Get initData safely
+      const initData = (() => {
+        if (typeof window === 'undefined') return 'demo_data';
+        
         const telegramWebApp = window.Telegram?.WebApp;
-        let initData = 'demo_data';
-
-        if (telegramWebApp && telegramWebApp.initData) {
-          initData = telegramWebApp.initData;
-          console.log('Using Telegram WebApp data');
-        } else {
-          console.log('Using demo data for testing');
+        if (telegramWebApp?.initData) {
+          return telegramWebApp.initData;
         }
+        return 'demo_data';
+      })();
 
-        // Call /api/me endpoint
-        const response = await fetch(`/api/me?initData=${encodeURIComponent(initData)}`);
-        const result = await response.json();
+      // Call API with abort signal
+      const response = await fetch(`/api/me?initData=${encodeURIComponent(initData)}`, {
+        signal: abortControllerRef.current.signal,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-        if (!result.ok) {
-          throw new Error(result.error || 'Failed to load user profile');
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
 
+      const result = await response.json();
+
+      if (!result.ok) {
+        throw new Error(result.error || 'Failed to load user profile');
+      }
+
+      // Only update state if component is still mounted
+      if (mountedRef.current) {
         setUser(result.user);
-      } catch (err) {
-        console.error('Profile load error:', err);
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
+        setError(null);
+      }
+    } catch (err) {
+      // Ignore abort errors
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
+
+      console.error('Profile load error:', err);
+      
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
+        setUser(null);
+      }
+    } finally {
+      if (mountedRef.current) {
         setLoading(false);
       }
-    };
-
-    loadUserProfile();
+    }
   }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    loadUserProfile();
+
+    // Cleanup function
+    return () => {
+      mountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [loadUserProfile]);
 
   if (loading) {
     return (
@@ -87,7 +126,13 @@ export default function ProfilePage() {
         <div className="text-center">
           <div className="text-red-500 text-xl mb-4">⚠️</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Ошибка загрузки</h2>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={handleRetry}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Повторить попытку
+          </button>
         </div>
       </div>
     );
@@ -103,6 +148,13 @@ export default function ProfilePage() {
     );
   }
 
+  // Retry handler for failed requests
+  const handleRetry = useCallback(() => {
+    setError(null);
+    setLoading(true);
+    loadUserProfile();
+  }, [loadUserProfile]);
+
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
 
   return (
@@ -114,14 +166,23 @@ export default function ProfilePage() {
             {user.photo_url ? (
               <img
                 src={user.photo_url}
-                alt="Profile"
+                alt={`${fullName || 'User'} profile picture`}
                 className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white bg-blue-500 flex items-center justify-center text-2xl font-bold">
-                {fullName ? fullName.charAt(0).toUpperCase() : '👤'}
-              </div>
-            )}
+            ) : null}
+            <div 
+              className="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-white bg-blue-500 flex items-center justify-center text-2xl font-bold"
+              style={{ display: user.photo_url ? 'none' : 'flex' }}
+            >
+              {fullName ? fullName.charAt(0).toUpperCase() : '👤'}
+            </div>
             <h1 className="text-xl font-bold">{fullName || 'Пользователь'}</h1>
             {user.username && (
               <p className="text-blue-200">@{user.username}</p>
