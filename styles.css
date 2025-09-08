@@ -1,0 +1,309 @@
+/* Telegram Web App Styles - Dark Theme */
+:root {
+    --tg-theme-bg-color: #212121;
+    --tg-theme-secondary-bg-color: #181818;
+    --tg-theme-text-color: #ffffff;
+    --tg-theme-hint-color: #708499;
+    --tg-theme-link-color: #5288c1;
+    --tg-theme-button-color: #5288c1;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-header-bg-color: #17212b;
+    --tg-accent-color: #64b5ef;
+    --tg-destructive-color: #e53935;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 100%;
+    min-height: 100vh;
+    position: relative;
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    transform: translateX(20px);
+}
+
+.screen.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* Login Screen */
+#loginScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--tg-theme-bg-color) 0%, var(--tg-theme-secondary-bg-color) 100%);
+}
+
+.login-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 16px;
+    padding: 40px 30px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.telegram-logo {
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.telegram-logo svg {
+    filter: drop-shadow(0 4px 8px rgba(34, 158, 217, 0.3));
+}
+
+.login-card h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--tg-theme-text-color);
+}
+
+.login-card p {
+    color: var(--tg-theme-hint-color);
+    margin-bottom: 32px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.login-btn {
+    background: var(--tg-accent-color);
+    color: var(--tg-theme-button-text-color);
+    border: none;
+    border-radius: 12px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(100, 181, 239, 0.3);
+}
+
+.login-btn:hover {
+    background: #5a9fd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(100, 181, 239, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.btn-icon {
+    font-size: 18px;
+}
+
+/* Profile Screen */
+#profileScreen {
+    padding: 0;
+    background: var(--tg-theme-bg-color);
+}
+
+.profile-header {
+    background: var(--tg-theme-header-bg-color);
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.profile-avatar {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--tg-theme-secondary-bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.profile-avatar img.loaded {
+    display: block;
+}
+
+.avatar-placeholder {
+    font-size: 24px;
+    color: var(--tg-theme-hint-color);
+}
+
+.profile-info {
+    flex: 1;
+}
+
+.profile-info h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--tg-theme-text-color);
+}
+
+.profile-info p {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.logout-btn {
+    background: var(--tg-destructive-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: #d32f2f;
+}
+
+.profile-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.info-card, .features-card {
+    background: var(--tg-theme-secondary-bg-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-card h3, .features-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--tg-theme-text-color);
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--tg-theme-hint-color);
+    font-size: 14px;
+}
+
+.info-value {
+    color: var(--tg-theme-text-color);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    color: var(--tg-theme-text-color);
+}
+
+.feature-icon {
+    font-size: 16px;
+}
+
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--tg-theme-hint-color);
+    border-radius: 50%;
+    border-top-color: var(--tg-accent-color);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    .profile-header {
+        padding: 20px 16px;
+    }
+    
+    .profile-content {
+        padding: 16px;
+    }
+    
+    .info-card, .features-card {
+        padding: 16px;
+    }
+}
+
+/* Dark theme adjustments for Telegram Web App */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tg-theme-bg-color: #212121;
+        --tg-theme-secondary-bg-color: #181818;
+    }
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

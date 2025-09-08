@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Web App</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Экран входа -->
+        <div id="loginScreen" class="screen active">
+            <div class="login-card">
+                <div class="telegram-logo">
+                    <svg width="60" height="60" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="120" cy="120" r="120" fill="#229ED9"/>
+                        <path d="m81.229 128.772 14.237 39.406s1.78 3.687 3.686 3.687 30.255-29.492 30.255-29.492l31.525-60.89L81.737 118.6l-.508 10.172z" fill="#fff"/>
+                        <path d="m100.106 138.878-2.733 29.046s-1.144 8.9 7.754 0 17.415-15.763 17.415-15.763" fill="#D2E5F1"/>
+                        <path d="m81.486 130.178 37.65-24.053s4.569-2.727 4.569-.763c0 1.964-4.569 4.691-4.569 4.691l-29.492 26.017-8.158-5.892z" fill="#B5CFE4"/>
+                    </svg>
+                </div>
+                <h1>Добро пожаловать</h1>
+                <p>Войдите через Telegram, чтобы получить доступ к вашему личному кабинету</p>
+                <button id="loginBtn" class="login-btn">
+                    <span class="btn-icon">📱</span>
+                    Войти через Telegram
+                </button>
+            </div>
+        </div>
+
+        <!-- Экран личного кабинета -->
+        <div id="profileScreen" class="screen">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <img id="userAvatar" src="" alt="Avatar" />
+                    <div class="avatar-placeholder">👤</div>
+                </div>
+                <div class="profile-info">
+                    <h2 id="userName">Загрузка...</h2>
+                    <p id="userUsername">@username</p>
+                </div>
+                <button id="logoutBtn" class="logout-btn">Выйти</button>
+            </div>
+
+            <div class="profile-content">
+                <div class="info-card">
+                    <h3>Информация профиля</h3>
+                    <div class="info-item">
+                        <span class="info-label">ID пользователя:</span>
+                        <span id="userId" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Имя:</span>
+                        <span id="userFirstName" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Фамилия:</span>
+                        <span id="userLastName" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Язык:</span>
+                        <span id="userLanguage" class="info-value">-</span>
+                    </div>
+                </div>
+
+                <div class="features-card">
+                    <h3>Возможности</h3>
+                    <div class="feature-item">
+                        <span class="feature-icon">✅</span>
+                        <span>Синхронизация с Telegram</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🔒</span>
+                        <span>Безопасная авторизация</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">⚡</span>
+                        <span>Быстрый доступ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

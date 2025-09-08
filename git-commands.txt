@@ -1,0 +1,30 @@
+# Команды для загрузки проекта на GitHub после установки Git
+
+# 1. Инициализация репозитория
+git init
+
+# 2. Настройка пользователя (замените на свои данные)
+git config --global user.name "Ваше имя"
+git config --global user.email "ваш@email.com"
+
+# 3. Добавление всех файлов
+git add .
+
+# 4. Первый коммит
+git commit -m "Initial commit: Telegram Web App project"
+
+# 5. Создание репозитория на GitHub (через веб-интерфейс):
+# - Перейдите на https://github.com
+# - Нажмите "New repository"
+# - Название: telegramweb
+# - Описание: Telegram Web App with dark theme
+# - Выберите Public или Private
+# - НЕ добавляйте README, .gitignore, license (они уже есть)
+# - Нажмите "Create repository"
+
+# 6. Подключение удаленного репозитория (замените YOUR_USERNAME)
+git remote add origin https://github.com/YOUR_USERNAME/telegramweb.git
+
+# 7. Загрузка на GitHub
+git branch -M main
+git push -u origin main
