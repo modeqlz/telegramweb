@@ -3,7 +3,6 @@ class TelegramWebApp {
     constructor() {
         this.tg = window.Telegram?.WebApp;
         this.user = null;
-        this.supabaseManager = new SupabaseManager();
         this.init();
     }
 
@@ -390,35 +389,19 @@ class TelegramWebApp {
     }
 
     async performSearch(query) {
-        // Поиск в базе данных Supabase
-        const searchResult = await this.supabaseManager.searchUsers(query);
-        
-        if (searchResult.success) {
-            const users = searchResult.data.map(user => ({
-                name: [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Пользователь',
-                username: user.username || `user_${user.telegram_id}`,
-                avatar: user.first_name ? user.first_name.charAt(0).toUpperCase() : 'U',
-                color: this.getAvatarColor(user.telegram_id),
-                telegram_id: user.telegram_id,
-                photo_url: user.photo_url
-            }));
-            
-            this.displaySearchResults(users);
-        } else {
-            // Fallback к демо-данным если база недоступна
-            const mockUsers = [
-                { name: 'Cloude Assistant', username: 'cloude_ai', avatar: 'C', color: '#64b5ef' },
-                { name: 'Test User', username: 'testuser', avatar: 'T', color: '#ff6b6b' },
-                { name: 'Demo Account', username: 'demo', avatar: 'D', color: '#4CAF50' }
-            ];
+        // Демо-данные для поиска
+        const mockUsers = [
+            { name: 'Cloude Assistant', username: 'cloude_ai', avatar: 'C', color: '#64b5ef' },
+            { name: 'Test User', username: 'testuser', avatar: 'T', color: '#ff6b6b' },
+            { name: 'Demo Account', username: 'demo', avatar: 'D', color: '#4CAF50' }
+        ];
 
-            const results = mockUsers.filter(user => 
-                user.username.toLowerCase().includes(query.toLowerCase()) ||
-                user.name.toLowerCase().includes(query.toLowerCase())
-            );
+        const results = mockUsers.filter(user => 
+            user.username.toLowerCase().includes(query.toLowerCase()) ||
+            user.name.toLowerCase().includes(query.toLowerCase())
+        );
 
-            this.displaySearchResults(results);
-        }
+        this.displaySearchResults(results);
     }
 
     displaySearchResults(results) {
