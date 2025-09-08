@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const initData = searchParams.get('initData');
+    const initData = request.nextUrl.searchParams.get('initData');
 
     if (!initData) {
       return NextResponse.json({ ok: false, error: 'Missing initData' }, { status: 400 });
