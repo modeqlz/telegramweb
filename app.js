@@ -108,8 +108,7 @@ class TelegramWebApp {
     async handleLogin() {
         if (this.tg && this.tg.initDataUnsafe?.user) {
             this.user = this.tg.initDataUnsafe.user;
-            await this.saveUserToDatabase();
-            this.showProfile();
+            this.showMainScreen();
         } else {
             // Демо-режим для тестирования
             this.user = {
@@ -120,8 +119,7 @@ class TelegramWebApp {
                 language_code: 'ru',
                 photo_url: null
             };
-            await this.saveUserToDatabase();
-            this.showProfile();
+            this.showMainScreen();
         }
     }
 
@@ -142,6 +140,14 @@ class TelegramWebApp {
         if (!this.user) return;
 
         // Обновляем информацию о пользователе
+        this.updateUserInfo();
+        this.switchScreen('profileScreen');
+    }
+
+    showMainScreen() {
+        if (!this.user) return;
+
+        // Обновляем информацию о пользователе в заголовке
         this.updateUserInfo();
         this.switchScreen('mainScreen');
     }
@@ -444,37 +450,12 @@ class TelegramWebApp {
         }
     }
 
-    // Новые методы для работы с базой данных
-    async saveUserToDatabase() {
-        if (!this.user) return;
-
-        try {
-            const result = await this.supabaseManager.saveUserData(this.user);
-            
-            if (result.success) {
-                console.log('Пользователь сохранен в базе данных:', result.data);
-            } else {
-                console.error('Ошибка сохранения пользователя:', result.error);
-            }
-        } catch (error) {
-            console.error('Ошибка при сохранении пользователя:', error);
-        }
-    }
 
     getAvatarColor(telegramId) {
         const colors = ['#64b5ef', '#ff6b6b', '#4CAF50', '#ff9500', '#8b5cf6', '#f59e0b'];
         return colors[telegramId % colors.length];
     }
 
-    async updateLastLogin() {
-        if (!this.user) return;
-
-        try {
-            await this.supabaseManager.updateLastLogin(this.user.id);
-        } catch (error) {
-            console.error('Ошибка обновления времени входа:', error);
-        }
-    }
 }
 
 // Инициализация приложения
