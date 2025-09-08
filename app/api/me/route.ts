@@ -1,8 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const initData = request.nextUrl.searchParams.get('initData');
+    const { searchParams } = new URL(request.url);
+    const initData = searchParams.get('initData');
 
     if (!initData) {
       return NextResponse.json({ ok: false, error: 'Missing initData' }, { status: 400 });
