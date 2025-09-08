@@ -74,7 +74,11 @@ class TelegramWebApp {
         const searchInput = document.getElementById('searchInput');
         const clearSearch = document.getElementById('clearSearch');
 
-        loginBtn?.addEventListener('click', () => this.handleLogin());
+        loginBtn?.addEventListener('click', (e) => {
+            console.log('🖱️ Клик по кнопке входа');
+            e.preventDefault();
+            this.handleLogin();
+        });
         logoutBtn?.addEventListener('click', () => this.handleLogout());
         backToMain?.addEventListener('click', () => this.switchScreen('mainScreen'));
         backFromSearch?.addEventListener('click', () => this.switchScreen('mainScreen'));
@@ -106,10 +110,17 @@ class TelegramWebApp {
     }
 
     async handleLogin() {
+        console.log('🚀 handleLogin вызван');
+        console.log('📱 Telegram WebApp:', this.tg);
+        console.log('👤 initDataUnsafe:', this.tg?.initDataUnsafe);
+        
         if (this.tg && this.tg.initDataUnsafe?.user) {
+            console.log('✅ Найден пользователь Telegram:', this.tg.initDataUnsafe.user);
             this.user = this.tg.initDataUnsafe.user;
+            console.log('🔄 Переходим на главный экран...');
             this.showMainScreen();
         } else {
+            console.log('⚠️ Пользователь Telegram не найден, используем демо-режим');
             // Демо-режим для тестирования
             this.user = {
                 id: 123456789,
@@ -119,6 +130,8 @@ class TelegramWebApp {
                 language_code: 'ru',
                 photo_url: null
             };
+            console.log('👤 Создан демо-пользователь:', this.user);
+            console.log('🔄 Переходим на главный экран...');
             this.showMainScreen();
         }
     }
@@ -145,11 +158,21 @@ class TelegramWebApp {
     }
 
     showMainScreen() {
-        if (!this.user) return;
+        console.log('📺 showMainScreen вызван');
+        console.log('👤 Текущий пользователь:', this.user);
+        
+        if (!this.user) {
+            console.log('❌ Пользователь не найден, выход из showMainScreen');
+            return;
+        }
 
+        console.log('🔄 Обновляем информацию пользователя...');
         // Обновляем информацию о пользователе в заголовке
         this.updateUserInfo();
+        
+        console.log('🎯 Переключаем на mainScreen...');
         this.switchScreen('mainScreen');
+        console.log('✅ Переключение на mainScreen завершено');
     }
 
     updateUserInfo() {
