@@ -1,13 +1,23 @@
 // Supabase Configuration
 class SupabaseManager {
     constructor() {
-        // Замените на ваши реальные URL и ключи из Supabase Dashboard
-        this.supabaseUrl = 'YOUR_SUPABASE_URL';
-        this.supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+        // Получаем переменные окружения из Vercel
+        this.supabaseUrl = this.getEnvVar('VITE_SUPABASE_URL') || 'YOUR_SUPABASE_URL';
+        this.supabaseKey = this.getEnvVar('VITE_SUPABASE_ANON_KEY') || 'YOUR_SUPABASE_ANON_KEY';
         
         // Инициализация Supabase клиента
         this.supabase = null;
         this.initSupabase();
+    }
+
+    // Получение переменных окружения (работает в браузере через Vite/Vercel)
+    getEnvVar(name) {
+        // Для Vercel/Vite переменные доступны через import.meta.env
+        if (typeof import !== 'undefined' && import.meta && import.meta.env) {
+            return import.meta.env[name];
+        }
+        // Fallback для других сред
+        return window.ENV && window.ENV[name];
     }
 
     initSupabase() {
