@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build-css.js && next build",
+    "postinstall": "node scripts/build-css.js",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:css": "node scripts/build-css.js"
   },
   "dependencies": {
     "next": "14.0.0",
@@ -20,6 +22,8 @@
     "typescript": "^5",
     "tailwindcss": "^3.3.0",
     "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31"
+    "postcss": "^8.4.31",
+    "postcss-import": "^16.0.0",
+    "postcss-nesting": "^12.0.0"
   }
 }
