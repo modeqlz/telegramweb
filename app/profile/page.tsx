@@ -34,35 +34,20 @@ export default function ProfilePage() {
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
-        // Check if Telegram WebApp is available
-        if (!window.Telegram?.WebApp) {
-          // For development/testing without Telegram
-          console.warn('Telegram WebApp not available - using mock data');
-          setUser({
-            id: 'test_user_123',
-            username: 'testuser',
-            first_name: 'Test',
-            last_name: 'User',
-            photo_url: '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
+        // Check if we're in browser environment
+        if (typeof window === 'undefined') {
           return;
         }
 
-        const initData = window.Telegram.WebApp.initData;
-        if (!initData) {
-          console.warn('No Telegram init data - using mock data');
-          setUser({
-            id: 'test_user_456',
-            username: 'mockuser',
-            first_name: 'Mock',
-            last_name: 'User',
-            photo_url: '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-          return;
+        // Check if Telegram WebApp is available
+        const telegramWebApp = window.Telegram?.WebApp;
+        let initData = 'demo_data';
+
+        if (telegramWebApp && telegramWebApp.initData) {
+          initData = telegramWebApp.initData;
+          console.log('Using Telegram WebApp data');
+        } else {
+          console.log('Using demo data for testing');
         }
 
         // Call /api/me endpoint
